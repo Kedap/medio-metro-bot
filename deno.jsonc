@@ -1,5 +1,11 @@
 {
+  "$schema": "https://deno.land/x/deno/cli/schemas/config-file.v1.json",
   "tasks": {
-    "dev": "deno run --watch src/main.ts"
+    "dev": "deno run --allow-net --allow-read --watch src/main.ts",
+    "run": "deno run --allow-net --allow-read src/main.ts"
+  },
+  "imports": {
+    "grammy/": "https://deno.land/x/grammy@v1.13.1/",
+    "dotenv": "https://deno.land/x/dotenv@v3.2.0/mod.ts"
   }
 }
