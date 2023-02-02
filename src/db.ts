@@ -1,5 +1,5 @@
-import { Database } from 'sqlite';
-import { ensureFile } from 'std/fs/mod.ts';
+import { Database } from "sqlite";
+import { ensureFile } from "std/fs/mod.ts";
 
 export interface Configuracion {
   id: number;
@@ -25,17 +25,17 @@ function query(q: string, db: Database) {
 }
 
 function existe_schema() {
-  const db = new Database('usuarios.db');
+  const db = new Database("usuarios.db");
   const tablas = db
     .prepare(
       `SELECT name FROM sqlite_schema
 WHERE type='table'
-ORDER BY name`
+ORDER BY name`,
     )
     .all();
 
   try {
-    return tablas[0].name == 'config' && tablas[1].name == 'respuestas';
+    return tablas[0].name == "config" && tablas[1].name == "respuestas";
   } catch {
     return false;
   }
@@ -47,7 +47,7 @@ export class Usuarios {
   constructor(
     db_path?: string,
     configuracion?: Configuracion,
-    entrada?: Respuesta
+    entrada?: Respuesta,
   ) {
     const config = `
      CREATE TABLE config (
@@ -67,7 +67,7 @@ export class Usuarios {
     );`;
 
     if (!db_path) {
-      db_path = 'usuarios.db';
+      db_path = "usuarios.db";
     }
     ensureFile(db_path);
     const db = new Database(db_path);

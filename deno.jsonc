@@ -8,6 +8,7 @@
     "grammy/": "https://deno.land/x/grammy@v1.13.1/",
     "std/": "https://deno.land/std@0.175.0/",
     "dotenv": "https://deno.land/x/dotenv@v3.2.0/mod.ts",
-    "sqlite": "https://deno.land/x/sqlite3@0.7.3/mod.ts"
+    "sqlite": "https://deno.land/x/sqlite3@0.7.3/mod.ts",
+    "openai": "https://deno.land/x/openai_mini@0.3.1/mod.ts"
   }
 }
