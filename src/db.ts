@@ -4,8 +4,7 @@ import { ensureFile } from "std/fs/mod.ts";
 export interface Configuracion {
   id: number;
   nombre: string;
-  modelo: string;
-  temperatura: number;
+  tipo: string;
 }
 
 export interface Respuesta {
@@ -53,8 +52,7 @@ export class Usuarios {
      CREATE TABLE config (
      id INTEGER PRIMARY KEY,
      nombre TEXT NOT NULL,
-     modelo TEXT NOT NULL,
-     temperatura REAL NOT NULL
+     tipo TEXT NOT NULL
     );`;
     const respuestas = `
      CREATE TABLE respuestas (
@@ -89,10 +87,20 @@ export class Usuarios {
   }
 
   agregar_conf(c: Configuracion) {
-    const consulta = `
-      INSERT INTO config (id, nombre, modelo, temperatura)
-      VALUES ('${c.id}', '${c.nombre}', '${c.modelo}', '${c.temperatura}')
+    const existe = this.db.prepare("SELECT * FROM config WHERE id = " + c.id);
+    let consulta: string;
+    if (existe.get()) {
+      consulta = `
+      UPDATE config
+      SET tipo = '${c.tipo}'
+      WHERE id = ${c.id}
     `;
+    } else {
+      consulta = `
+      INSERT INTO config (id, nombre, tipo)
+      VALUES ('${c.id}', '${c.nombre}', '${c.tipo}')
+    `;
+    }
     query(consulta, this.db);
   }
 
@@ -102,5 +110,17 @@ export class Usuarios {
       VALUES ('${r.id}', '${r.nombre}', '${r.hora}', '${r.respuesta}', '${r.entrada}')
     `;
     query(consulta, this.db);
+  }
+
+  obtener_conf(id: number): Configuracion {
+    const consulta = this.db
+      .prepare("SELECT * FROM config WHERE id = " + id)
+      .get();
+
+    return {
+      id: consulta?.id as number,
+      nombre: consulta?.nombre as string,
+      tipo: consulta?.tipo as string,
+    };
   }
 }
