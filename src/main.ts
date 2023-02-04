@@ -49,7 +49,9 @@ bot.command('config', (ctx) => {
 bot.command('votar', async (ctx) => {
   const nombre = ctx.from?.first_name;
   const votar = ctx.message?.text.split(' ')[1];
-  await Deno.writeTextFile('./votos.txt', `${nombre}:${votar}`);
+  const encoder = new TextEncoder();
+  const data = encoder.encode(`${nombre}:${votar}\n`);
+  await Deno.writeFile('./votos.txt', data, { append: true });
   ctx.reply('Votaste porque el nombre sea: ' + votar);
 });
 
