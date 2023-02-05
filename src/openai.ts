@@ -49,7 +49,7 @@ export const TIPOS: Record<string, Modelo> = {
   medio: {
     modelo: "text-curie-001",
     temperatura: 0.75,
-    maximo: 200,
+    maximo: 400,
   },
   alto: {
     modelo: "text-davinci-003",
@@ -59,6 +59,6 @@ export const TIPOS: Record<string, Modelo> = {
   altoalto: {
     modelo: "text-davinci-003",
     temperatura: 0.78,
-    maximo: 256,
+    maximo: 356,
   },
 };
