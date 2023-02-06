@@ -1,5 +1,5 @@
-import { Database } from "sqlite";
-import { ensureFile } from "std/fs/mod.ts";
+import { Database } from 'sqlite3';
+import { ensureFile } from 'fs-extra';
 
 export interface Configuracion {
   id: number;
@@ -23,22 +23,17 @@ function query(q: string, db: Database) {
   db.exec(q);
 }
 
-function existe_schema() {
-  const db = new Database("usuarios.db");
-  const tablas = db
-    .prepare(
-      `SELECT name FROM sqlite_schema
-WHERE type='table'
-ORDER BY name`,
-    )
-    .all();
-
-  try {
-    return tablas[0].name == "config" && tablas[1].name == "respuestas";
-  } catch {
-    return false;
-  }
-  // return tablas[0].name == 'config' && tablas[0].name == 'config';
+function existe_schema(): boolean {
+  const db = new Database('usuarios.db');
+  let resultado = false;
+  db.all(
+    `SELECT name FROM sqlite_schema WHERE name = ? OR name = ?`,
+    ['config', 'respuestas'],
+    (_e, row) => {
+      resultado = row.length == 2;
+    }
+  );
+  return resultado;
 }
 
 export class Usuarios {
@@ -46,7 +41,7 @@ export class Usuarios {
   constructor(
     db_path?: string,
     configuracion?: Configuracion,
-    entrada?: Respuesta,
+    entrada?: Respuesta
   ) {
     const config = `
      CREATE TABLE config (
@@ -65,7 +60,7 @@ export class Usuarios {
     );`;
 
     if (!db_path) {
-      db_path = "usuarios.db";
+      db_path = 'usuarios.db';
     }
     ensureFile(db_path);
     const db = new Database(db_path);
@@ -87,7 +82,7 @@ export class Usuarios {
   }
 
   agregar_conf(c: Configuracion) {
-    const existe = this.db.prepare("SELECT * FROM config WHERE id = " + c.id);
+    const existe = this.db.prepare('SELECT * FROM config WHERE id = ' + c.id);
     let consulta: string;
     if (existe.get()) {
       consulta = `
@@ -113,14 +108,17 @@ export class Usuarios {
   }
 
   obtener_conf(id: number): Configuracion {
-    const consulta = this.db
-      .prepare("SELECT * FROM config WHERE id = " + id)
-      .get();
-
-    return {
-      id: consulta?.id as number,
-      nombre: consulta?.nombre as string,
-      tipo: consulta?.tipo as string,
+    let consultas: Configuracion = {
+      id: 0,
+      nombre: '',
+      tipo: '',
     };
+    this.db.get('SELECT * FROM config WHERE id = ' + id, (_e, row) => {
+      consultas.id = row.id;
+      consultas.nombre = row.nombre;
+      consultas.tipo = row.tipo;
+    });
+
+    return consultas;
   }
 }

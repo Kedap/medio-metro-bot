@@ -1,14 +1,21 @@
-import { config } from "dotenv";
-import { OpenAI } from "openai";
-import { Configuracion } from "./db.ts";
+import * as dotenv from 'dotenv';
+dotenv.config();
+import { Configuration, OpenAIApi } from 'openai';
+import { Configuracion } from './db';
 
 export class Peticion {
-  instancia: OpenAI;
+  instancia: OpenAIApi;
   constructor(token?: string) {
     if (token) {
-      this.instancia = new OpenAI(token);
+      const configuration = new Configuration({
+        apiKey: token,
+      });
+      this.instancia = new OpenAIApi(configuration);
     } else {
-      this.instancia = new OpenAI(config().OPENAI_TOKEN);
+      const configuration = new Configuration({
+        apiKey: process.env.OPENAI_TOKEN,
+      });
+      this.instancia = new OpenAIApi(configuration);
     }
   }
 
@@ -23,9 +30,14 @@ export class Peticion {
       n: 1,
       stream: false,
       logprobs: null,
-      stop: "",
+      stop: '',
     });
-    return complete.choices[0].text;
+    let resultado = complete.data.choices[0].text;
+    if (!resultado) {
+      resultado =
+        'No puedo responder a esto, perdona e intenta con otra cosa :c';
+    }
+    return resultado;
   }
 }
 
@@ -37,27 +49,27 @@ interface Modelo {
 
 export const TIPOS: Record<string, Modelo> = {
   bajobajo: {
-    modelo: "text-ada-001",
+    modelo: 'text-ada-001',
     temperatura: 0,
     maximo: 100,
   },
   bajo: {
-    modelo: "text-curie-001",
+    modelo: 'text-curie-001',
     temperatura: 0.1,
     maximo: 120,
   },
   medio: {
-    modelo: "text-curie-001",
+    modelo: 'text-curie-001',
     temperatura: 0.75,
     maximo: 400,
   },
   alto: {
-    modelo: "text-davinci-003",
+    modelo: 'text-davinci-003',
     temperatura: 0.7,
     maximo: 175,
   },
   altoalto: {
-    modelo: "text-davinci-003",
+    modelo: 'text-davinci-003',
     temperatura: 0.78,
     maximo: 356,
   },

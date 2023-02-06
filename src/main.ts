@@ -1,37 +1,42 @@
-import { Bot } from "grammy/mod.ts";
-import { config } from "dotenv";
-import { Configuracion, Respuesta, Usuarios } from "./db.ts";
-import { Peticion } from "./openai.ts";
-import { EJEMPLOS } from "./ejemplos.ts";
+import { Bot } from 'grammy';
+import * as dotenv from 'dotenv';
+dotenv.config();
+import { Configuracion, Respuesta, Usuarios } from './db';
+import { Peticion } from './openai';
+import { EJEMPLOS } from './ejemplos';
 
 // Configuracion de los tokens
-const bot = new Bot(config().BOT_TOKEN);
+let botToken = process.env.BOT_TOKEN;
+if (!botToken) {
+  botToken = '';
+}
+const bot = new Bot(botToken);
 const db = new Usuarios();
 const ahora = new Date();
 
-bot.command("start", (ctx) => {
-  ctx.reply("EEeeee medioMetroooo");
+bot.command('start', (ctx) => {
+  ctx.reply('EEeeee medioMetroooo');
   let nombre = ctx.from?.first_name;
   if (!nombre) {
-    nombre = "";
+    nombre = '';
   }
   const configuracion: Configuracion = {
     id: ctx.chat.id,
     nombre: nombre,
-    tipo: "medio",
+    tipo: 'medio',
   };
   db.agregar_conf(configuracion);
 });
 
-bot.command("config", (ctx) => {
-  let nuevaConfig = ctx.message?.text.split(" ")[1];
+bot.command('config', (ctx) => {
+  let nuevaConfig = ctx.message?.text.split(' ')[1];
   let config = db.obtener_conf(ctx.chat.id);
   let nombre = ctx.from?.first_name;
   if (!nuevaConfig) {
-    nuevaConfig = "medio";
+    nuevaConfig = 'medio';
   }
   if (!nombre) {
-    nombre = "";
+    nombre = '';
   }
   config = {
     id: ctx.chat.id,
@@ -39,30 +44,31 @@ bot.command("config", (ctx) => {
     tipo: nuevaConfig,
   };
   db.agregar_conf(config);
-  ctx.reply("Simon se puso en " + nuevaConfig);
+  ctx.reply('Simon se puso en ' + nuevaConfig);
 });
 
-bot.command("ejemplo", (ctx) => {
-  let nombre = ctx.message?.text.split(" ")[1];
-  if (!nombre || nombre === "") {
-    nombre = "ayuda";
+bot.command('ejemplo', (ctx) => {
+  let nombre = ctx.message?.text.split(' ')[1];
+  if (!nombre || nombre === '') {
+    nombre = 'ayuda';
   }
   ctx.reply(EJEMPLOS[nombre.toLowerCase()]);
 });
 
-bot.on("message:text", async (ctx) => {
-  const hora: string = ahora.getDay() +
-    "/" +
+bot.on('message:text', async (ctx) => {
+  const hora: string =
+    ahora.getDay() +
+    '/' +
     ahora.getDate().toString() +
-    "/" +
+    '/' +
     ahora.getMonth() +
-    "/" +
+    '/' +
     ahora.getFullYear().toString() +
-    ":" +
+    ':' +
     ahora.getHours().toString() +
-    ":" +
+    ':' +
     ahora.getMinutes().toString() +
-    ":" +
+    ':' +
     ahora.getSeconds().toString();
 
   const autor = ctx.update.message.from;
