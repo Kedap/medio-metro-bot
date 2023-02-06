@@ -28,9 +28,9 @@ bot.command('start', (ctx) => {
   db.agregar_conf(configuracion);
 });
 
-bot.command('config', (ctx) => {
+bot.command('config', async (ctx) => {
   let nuevaConfig = ctx.message?.text.split(' ')[1];
-  let config = db.obtener_conf(ctx.chat.id);
+  let config = await db.obtener_conf(ctx.chat.id);
   let nombre = ctx.from?.first_name;
   if (!nuevaConfig) {
     nuevaConfig = 'medio';
@@ -73,7 +73,7 @@ bot.on('message:text', async (ctx) => {
 
   const autor = ctx.update.message.from;
   const peticion = new Peticion();
-  const config = db.obtener_conf(autor.id);
+  const config = await db.obtener_conf(autor.id);
   const response = await peticion.completado(ctx.update.message.text, config);
   const respuesta: Respuesta = {
     id: autor.id,
@@ -86,4 +86,5 @@ bot.on('message:text', async (ctx) => {
   db.agregar_resp(respuesta);
 });
 
+console.log('El bot comenzara a ejecutarse 😸');
 bot.start();

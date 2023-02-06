@@ -1,5 +1,6 @@
 import { Database } from 'sqlite3';
 import { ensureFile } from 'fs-extra';
+import { existsSync } from 'fs';
 
 export interface Configuracion {
   id: number;
@@ -21,19 +22,6 @@ export function obtener_conn(archivo: string) {
 
 function query(q: string, db: Database) {
   db.exec(q);
-}
-
-function existe_schema(): boolean {
-  const db = new Database('usuarios.db');
-  let resultado = false;
-  db.all(
-    `SELECT name FROM sqlite_schema WHERE name = ? OR name = ?`,
-    ['config', 'respuestas'],
-    (_e, row) => {
-      resultado = row.length == 2;
-    }
-  );
-  return resultado;
 }
 
 export class Usuarios {
@@ -62,12 +50,15 @@ export class Usuarios {
     if (!db_path) {
       db_path = 'usuarios.db';
     }
+
+    if (existsSync(db_path)) {
+      const db = new Database(db_path);
+      this.db = db;
+      return this;
+    }
     ensureFile(db_path);
     const db = new Database(db_path);
     this.db = db;
-    if (existe_schema()) {
-      return this;
-    }
     query(config, db);
     query(respuestas, db);
 
@@ -82,21 +73,22 @@ export class Usuarios {
   }
 
   agregar_conf(c: Configuracion) {
-    const existe = this.db.prepare('SELECT * FROM config WHERE id = ' + c.id);
-    let consulta: string;
-    if (existe.get()) {
-      consulta = `
-      UPDATE config
-      SET tipo = '${c.tipo}'
-      WHERE id = ${c.id}
-    `;
-    } else {
-      consulta = `
-      INSERT INTO config (id, nombre, tipo)
-      VALUES ('${c.id}', '${c.nombre}', '${c.tipo}')
-    `;
-    }
-    query(consulta, this.db);
+    this.db.get('SELECT * FROM config WHERE id = ?', c.id, (_, row) => {
+      let consulta: string;
+      if (row) {
+        consulta = `
+     UPDATE config
+     SET tipo = '${c.tipo}'
+     WHERE id = ${c.id}
+   `;
+      } else {
+        consulta = `
+     INSERT INTO config (id, nombre, tipo)
+     VALUES ('${c.id}', '${c.nombre}', '${c.tipo}')
+   `;
+      }
+      query(consulta, this.db);
+    });
   }
 
   agregar_resp(r: Respuesta) {
@@ -107,18 +99,19 @@ export class Usuarios {
     query(consulta, this.db);
   }
 
-  obtener_conf(id: number): Configuracion {
-    let consultas: Configuracion = {
-      id: 0,
-      nombre: '',
-      tipo: '',
-    };
-    this.db.get('SELECT * FROM config WHERE id = ' + id, (_e, row) => {
-      consultas.id = row.id;
-      consultas.nombre = row.nombre;
-      consultas.tipo = row.tipo;
+  obtener_conf(id: number): Promise<Configuracion> {
+    return new Promise((resolve, reject) => {
+      this.db.serialize(() => {
+        this.db.get('SELECT * FROM config WHERE id = ?', id, (err, row) => {
+          if (err) reject(err);
+          const consulta: Configuracion = {
+            id: row.id,
+            nombre: row.nombre,
+            tipo: row.tipo,
+          };
+          resolve(consulta);
+        });
+      });
     });
-
-    return consultas;
   }
 }
