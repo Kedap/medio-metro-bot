@@ -22,4 +22,13 @@ Es tan facil de ejecutar con los siguientes pasos:
 deno task run
 ```
 
-3. Disfruta :) Proximamente la version para node
+## Tambien con node!
+
+Si quiere ejecutar la version de node lo puede hacer cambiando a la rama `node` e instalando las dependencias:
+
+```sh
+git checkout node
+npm install
+npm run build
+npm run start
+```
