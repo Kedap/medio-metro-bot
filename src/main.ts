@@ -80,4 +80,5 @@ bot.on("message:text", async (ctx) => {
   db.agregar_resp(respuesta);
 });
 
+console.log("El bot comenzara a ejecutarse 😸");
 bot.start();
