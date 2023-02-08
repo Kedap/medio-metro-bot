@@ -24,7 +24,8 @@ deno task run
 
 ## Tambien con node!
 
-Si quiere ejecutar la version de node lo puede hacer cambiando a la rama `node` e instalando las dependencias:
+Si quiere ejecutar la version de node lo puede hacer cambiando a la rama `node`
+e instalando las dependencias:
 
 ```sh
 git checkout node
