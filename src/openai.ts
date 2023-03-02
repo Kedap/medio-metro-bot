@@ -57,7 +57,7 @@ export const TIPOS: Record<string, Modelo> = {
     maximo: 175,
   },
   altoalto: {
-    modelo: "text-davinci-003",
+    modelo: "gpt-3.5-turbo",
     temperatura: 0.78,
     maximo: 356,
   },
