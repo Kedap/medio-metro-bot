@@ -21,18 +21,30 @@ export class Peticion {
 
   async completado(entrada: string, config: Configuracion) {
     const c = TIPOS[config.tipo];
-    const complete = await this.instancia.createCompletion({
-      model: c.modelo,
-      prompt: `${entrada}`,
-      max_tokens: c.maximo,
-      temperature: c.temperatura,
-      top_p: 1,
-      n: 1,
-      stream: false,
-      logprobs: null,
-      stop: '',
-    });
-    let resultado = complete.data.choices[0].text;
+    let resultado: string | undefined = undefined;
+    if (c.modelo != 'gpt-3.5-turbo') {
+      const complete = await this.instancia.createCompletion({
+        model: c.modelo,
+        prompt: `${entrada}`,
+        max_tokens: c.maximo,
+        temperature: c.temperatura,
+        top_p: 1,
+        n: 1,
+        stream: false,
+        logprobs: null,
+        stop: '',
+      });
+      resultado = complete.data.choices[0].text;
+    } else {
+      const { data } = await this.instancia.createChatCompletion({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: `${entrada}` }],
+        temperature: 0,
+        top_p: 0.1,
+        max_tokens: c.maximo,
+      });
+      resultado = data.choices[0].message?.content;
+    }
     if (!resultado) {
       resultado =
         'No puedo responder a esto, perdona e intenta con otra cosa :c';
@@ -65,12 +77,12 @@ export const TIPOS: Record<string, Modelo> = {
   },
   alto: {
     modelo: 'text-davinci-003',
-    temperatura: 0.7,
-    maximo: 175,
-  },
-  altoalto: {
-    modelo: 'text-davinci-003',
     temperatura: 0.78,
     maximo: 356,
+  },
+  altoalto: {
+    modelo: 'gpt-3.5-turbo',
+    temperatura: 0,
+    maximo: 200,
   },
 };
