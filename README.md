@@ -1,6 +1,6 @@
 # Medio Metro Bot
 
-Un bot de Telegram que interactua con la API de chatgpt
+Un bot de Telegram que interactua con la API de chatgpt-3
 
 ![medio metro](img/icon.jpg)
 
