@@ -13,6 +13,9 @@ if (!botToken) {
 const bot = new Bot(botToken);
 const db = new Usuarios();
 const ahora = new Date();
+let memorizar = false;
+let contexto =
+  'La siguiente es una conversación con un asistente de IA. El asistente es útil, creativo, inteligente y muy amable.\nHumano: ';
 
 bot.command('start', (ctx) => {
   ctx.reply('EEeeee medioMetroooo');
@@ -55,7 +58,24 @@ bot.command('ejemplo', (ctx) => {
   ctx.reply(EJEMPLOS[nombre.toLowerCase()]);
 });
 
+bot.command('memorizar', (ctx) => {
+  let cmd = ctx.message?.text.split(' ')[1];
+  if (!cmd || cmd === '' || cmd != 'activar') {
+    memorizar = false;
+    contexto =
+      'La siguiente es una conversación con un asistente de IA. El asistente es útil, creativo, inteligente y muy amable.\nHumano: ';
+  } else {
+    memorizar = true;
+  }
+  ctx.reply(
+    memorizar ? 'Esta activado la memorizacion' : 'Se desactivo la memorizacion'
+  );
+});
+
 bot.on('message:text', async (ctx) => {
+  if (memorizar) {
+    contexto += ctx.update.message.text + '\nAI: ';
+  }
   const hora: string =
     ahora.getDay() +
     '/' +
@@ -74,7 +94,12 @@ bot.on('message:text', async (ctx) => {
   const autor = ctx.update.message.from;
   const peticion = new Peticion();
   const config = await db.obtener_conf(autor.id);
-  const response = await peticion.completado(ctx.update.message.text, config);
+  let response = '';
+  if (memorizar) {
+    response = await peticion.completado(contexto, config);
+  } else {
+    response = await peticion.completado(ctx.update.message.text, config);
+  }
   const respuesta: Respuesta = {
     id: autor.id,
     nombre: autor.first_name,
@@ -84,6 +109,9 @@ bot.on('message:text', async (ctx) => {
   };
   ctx.reply(response);
   db.agregar_resp(respuesta);
+  if (memorizar) {
+    contexto += response + '\nHumano: ';
+  }
 });
 
 console.log('El bot comenzara a ejecutarse 😸');
